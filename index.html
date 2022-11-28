@@ -89,16 +89,16 @@
       p.strokeText("4/4", 20, 320);
       concluidos < app.fases - 1 ? p.strokeText("big interval", 20, 370) : "";
       p.strokeStyle = "tomato";
-      p.strokeRect(20, 30, 310, 10);
-      p.strokeRect(20, 130, 310, 10);
-      p.strokeRect(20, 230, 310, 10);
-      p.strokeRect(20, 330, 310, 10);
+      p.strokeRect(20, 30, (app.workMin * 310) / 50, 10);
+      p.strokeRect(20, 130, (app.workMin * 310) / 50, 10);
+      p.strokeRect(20, 230, (app.workMin * 310) / 50, 10);
+      p.strokeRect(20, 330, (app.workMin * 310) / 50, 10);
       p.strokeStyle = "green";
-      p.strokeRect(20, 80, 86, 10);
-      p.strokeRect(20, 180, 86, 10);
-      p.strokeRect(20, 280, 86, 10);
+      p.strokeRect(20, 80, (app.pauseMin * 310) / 50, 10);
+      p.strokeRect(20, 180, (app.pauseMin * 310) / 50, 10);
+      p.strokeRect(20, 280, (app.pauseMin * 310) / 50, 10);
       p.strokeStyle = "blue";
-      concluidos < app.fases - 1 ? p.strokeRect(20, 380, 310, 10) : "";
+      concluidos < app.fases - 1 ? p.strokeRect(20, 380, (app.bigInterval * 310) / 50, 10) : "";
     }
 
     var concluidos = 0;
