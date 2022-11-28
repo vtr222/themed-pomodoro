@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta icon="" />
+  <title>pomodoro</title>
+  <link rel="shortcut icon" href="pomodoro.png" />
+  <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      height: 100vh;
+      margin: 0;
+      font-family: Itim;
+      display: flex;
+      justify-content: center;
+    }
+
+    canvas {
+      border: 1px solid black;
+      display: inline-block;
+      position: absolute;
+      top: 10vh;
+    }
+  </style>
+</head>
+
+<body>
+  <canvas height="420" width="350"></canvas>
+  <div id="concluidos" style="padding: 35px; text-align: center; font-size: 20px">
+    <audio :src="theme + '/work.mp3'"></audio>
+    <img :src="theme + '/bg.png'" style="
+          opacity: 0.15;
+          position: absolute;
+          top: 10vh;
+          left: calc(50% - 350px / 2);
+        " />
+
+
+    <span id="a">{{concluidos}} /
+      <input v-model="fases" style="height: 30px; width: 25px; font-size: 20px; text-align: center" />
+      <select v-model="theme">
+        <option>superMarioWorld</option>
+        <option>sonicDrift2</option>
+      </select>
+    </span>
+    <div style="display: flex; flex-direction: column; position: relative; top:470px; gap: 10px">
+      <label>Work minutes<input :disabled="!canChange" style="margin-left: 5px;" v-model="workMin" /></label>
+      <label>Pause minutes<input :disabled="!canChange" style="margin-left: 5px;" v-model="pauseMin" /></label>
+      <label>Big pause minutes<input :disabled="!canChange" style="margin-left: 5px;" v-model="bigInterval" /></label>
+
+    </div>
+  </div>
+
+  <script>
+
+    var app = new Vue({
+      el: "#concluidos",
+      data: {
+        canChange: true,
+        fases: 2,
+        theme: "superMarioWorld",
+        concluidos: 0,
+        workMin: 50,
+        bigInterval: 15,
+        pauseMin: 7,
+      },
+    });
+
+    const canvas = document.querySelector("canvas");
+    const p = canvas.getContext("2d");
+    const img = document.querySelector("img");
+    var id = "";
+    let stage = 0;
+    function pomodoro() {
+      p.strokeStyle = "black";
+      p.strokeText("1/4", 20, 20);
+      p.strokeText("interval", 20, 70);
+      p.strokeText("2/4", 20, 120);
+      p.strokeText("interval", 20, 170);
+      p.strokeText("3/4", 20, 220);
+      p.strokeText("interval", 20, 270);
+      p.strokeText("4/4", 20, 320);
+      concluidos < app.fases - 1 ? p.strokeText("big interval", 20, 370) : "";
+      p.strokeStyle = "tomato";
+      p.strokeRect(20, 30, 310, 10);
+      p.strokeRect(20, 130, 310, 10);
+      p.strokeRect(20, 230, 310, 10);
+      p.strokeRect(20, 330, 310, 10);
+      p.strokeStyle = "green";
+      p.strokeRect(20, 80, 86, 10);
+      p.strokeRect(20, 180, 86, 10);
+      p.strokeRect(20, 280, 86, 10);
+      p.strokeStyle = "blue";
+      concluidos < app.fases - 1 ? p.strokeRect(20, 380, 310, 10) : "";
+    }
+
+    var concluidos = 0;
+    var stages = [
+      "work",
+      "pause",
+      "work",
+      "pause",
+      "work",
+      "pause",
+      "work",
+      "end",
+    ];
+
+    var sec = 0;
+    var y, w, max, bar;
+    var color = "";
+
+    var start = () => {
+      app.canChange = false
+      sec = 0;
+      stages = [
+        "work",
+        "pause",
+        "work",
+        "pause",
+        "work",
+        "pause",
+        "work",
+        "end",
+      ];
+      stage = 0;
+      document.querySelector("audio").src =
+        app.theme + "/" + stages[stage] + ".mp3";
+      clearInterval(id);
+      document.querySelector("audio").load();
+      document.querySelector("audio").play();
+      p.clearRect(0, 0, 400, 400);
+      pomodoro();
+      id = setInterval(count, 1000);
+    };
+
+    function count() {
+      sec++;
+
+      switch (stages[stage]) {
+        case "work":
+          y = 30 + stage * 50;
+          color = "tomato";
+          max = parseFloat(app.workMin) * 60;
+          bar = 310;
+          break;
+        case "pause":
+          y = 80 + (stage - 1) * 50;
+          color = "green";
+          max = parseFloat(app.pauseMin) * 60;
+          bar = 86;
+          break;
+        case "end":
+          y = 380;
+          color = "blue";
+          max = parseFloat(app.bigInterval) * 60;
+          bar = 310;
+          break;
+      }
+
+      w = (bar / max) * sec;
+
+      if (sec >= max) {
+        if (stages[stage] === "end") {
+          clearInterval(id);
+          app.concluidos++;
+          concluidos++; /*
+            document.querySelector(
+              "#concluidos"
+            ).textContent = `${concluidos} / 3`;*/
+          stages[stage + 1] = "reset";
+
+        }
+        stage++;
+
+        sec = 0;
+
+        document.querySelector("audio").src =
+          app.theme + "/" + stages[stage] + ".mp3";
+
+        if (stages[stage] === "reset") {
+          document.querySelector("audio").onloadeddata = () => {
+            console.log(document.querySelector("audio").duration * 1000);
+            setTimeout(() => {
+              document.querySelector("audio").onloadeddata = () => { };
+              start();
+            }, document.querySelector("audio").duration * 1000);
+          };
+        }
+        if (concluidos === app.fases - 1 && stage === 7) {
+          clearInterval(id);
+          document.querySelector("audio").src =
+            app.theme + "/" + "finish.mp3";
+          document.querySelector("audio").play();
+          document.querySelector("#a").textContent = `FIM!`;
+          app.canChange = true
+          return;
+        }
+        document.querySelector("audio").play();
+      }
+      p.fillStyle = color;
+      p.fillRect(20, y, w, 10);
+    }
+
+    pomodoro();
+
+    img.addEventListener("click", start);
+  </script>
+</body>
+
+</html>
